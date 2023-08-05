@@ -1,0 +1,113 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}Rutinas{% endblock %}
+{% block content %}
+
+<main role="main" style="padding-top:30px; padding-bottom:30px" class="d-flex flex-column align-items-center">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'core/js/script.js' %}"></script>
+    <div style="text-align:center;" class="text-dark">
+        <h1>Rutinas</h1>
+        <p class="lead">Rutinas que compartieron los usuarios</p>
+    </div>
+
+    <!-- Alerts -->
+    {% if messages %}
+       {% for message in messages %}
+            <script>
+                Swal.fire({
+                        "title": "{{message}}",
+                        "icon": "success",
+                        "toast": true,
+                        "timer": 5000,
+                        "timerProgressBar": true,
+                        "showConfirmButton": false,
+                        "position": 'bottom-end'
+                    })
+            </script>
+       {% endfor %}
+    {% endif %} 
+
+    <div class="container d-flex flex-column justify-content-center my-3">
+        {% if routine %}
+            {% for r in routine %}
+                    <div id="openRoutine{{ r.id }}" data-routine-id="{{ r.id }}" class="mx-2 mt-2 p-3" style="background-color: #020010; cursor: pointer;" onmouseover="this.style.backgroundColor='#030018';" onmouseout="this.style.backgroundColor='#020010';">
+                        <h5 style="font-weight: bolder" class="text-light mb-0">{{r.title}}</h5>
+                    </div>
+                    <div id="routine{{ r.id }}" class="mx-2 mb-2 px-3 pb-3" style="background-color: #020010; display: none;">
+                        {% for d in day %}
+                            {% if d.routine == r %}
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th colspan="4" style="color: white; background-color: #131c46 !important;">
+                                                <div class="d-flex align-items-center justify-content-between" style="margin-bottom: 0.6px;">
+                                                    DÍA {{d}}
+                                                </div>
+                                            </th>                                       
+                                        </tr>
+                                    </thead>
+                                    <thead>
+                                        <tr>
+                                            <th scope="col" style="background-color: #1d405c; color: white;">Ejercicio</th>
+                                            <th scope="col" style="background-color: #1d405c; color: white;">Series</th>
+                                            <th scope="col" style="background-color: #1d405c; color: white;">Repeticiones</th>
+                                        </tr>
+                                    </thead>
+                                    {% for e in exercise %}
+                                        {% if e.day == d %}
+                                            <tbody>
+                                                <tr>
+                                                    <td style="background-color: white;">{{e.name}}</td>
+                                                    <td style="background-color: white;">{{e.series}}</td>
+                                                    <td style="background-color: white;">{{e.reps}}</td>
+                                                </tr>
+                                            </tbody>
+                                        {% endif %}
+                                    {% endfor %}
+                                </table>
+                            {% endif %}
+                        {% endfor %}
+                        <div class="d-flex justify-content-between">
+                            <p  class="text-light m-0">Realizada por '{{r.user}}'</p>
+                            {% if request.user.is_authenticated %}
+                                {% if user != r.user %}
+                                    <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#copyRoutineModal{{ r.id }}" style="--bs-btn-padding-y: .007rem; --bs-btn-padding-x: .25rem; --bs-btn-font-size: 1rem;">                             
+                                        Agregar a mis rutinas
+                                    </button>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Modal copy Routine-->
+                    <div class="modal fade" id="copyRoutineModal{{ r.id }}" tabindex="-1" role="dialog" aria-labelledby="copyRoutineModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content">                       
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-black">Añadir a Mis Rutinas</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>¿Estás seguro de que deseas añadir "{{r}}" a tus rutinas?</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" >
+                                        <a href="{% url 'routines:copy_routine' routine_id=r.id %}" style="text-decoration: none; color: white;">
+                                            Aceptar
+                                        </a>
+                                    </button>
+                                </div>                               
+                            </div>
+                        </div>
+                    </div>
+                    
+            {% endfor %}
+        {% else %}
+            <h5>No hay rutinas compartidas disponibles.</h5>
+        {% endif %}
+    </div>
+</main>
+
+{% endblock %}

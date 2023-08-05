@@ -1,0 +1,50 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}Iniciar sesión{% endblock %}
+{% block content %}
+
+<main role="main" style="padding-top:30px;">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <div class="container">
+        <div class="row mt-3">
+            <div class="col-md-9 mx-auto mb-5">
+                {% if 'register' in request.GET %}
+                    <p style="color:green">Ha sido registrado correctamente, ya puede iniciar sesión.</p>
+                {% endif %}
+                <!-- Alerts -->
+                {% if messages %}
+                    {% for message in messages %}
+                         <script>
+                             Swal.fire({
+                                    "title": "{{message}}",
+                                    "icon": "success",
+                                    "toast": true,
+                                    "timer": 5000,
+                                    "timerProgressBar": true,
+                                    "showConfirmButton": false,
+                                    "position": 'bottom-end'
+                                 })
+                         </script>
+                    {% endfor %}
+                {% endif %}    
+                <form action="" method="post">{% csrf_token %}
+                    <h3 class="mb-4 text-dark">Iniciar sesión</h3>
+                    {% if form.non_field_errors %}
+                        <p style="color:red">Usuario o contraseña incorrectos, prueba de nuevo.</p>
+                    {% endif %}
+                    <p>
+                        <input type="text" name="username" autofocus maxlength="254" required id="id_username"
+                            class="form-control" placeholder="Nombre de usuario" />
+                    </p>
+                    <p>
+                        <input type="password" name="password" required id="id_password" class="form-control"
+                            placeholder="Contraseña" />
+                    </p>
+                    <p><input type="submit" class="btn btn-primary btn-block" value="Acceder"></p>
+                </form>
+                <p>Si no tienes una cuenta regístrate <a href="{% url 'signup' %}">aquí</a></p>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

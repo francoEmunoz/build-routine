@@ -1,0 +1,382 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}Mis rutinas{% endblock %}
+{% block content %}
+<main role="main" style="padding-top:30px; padding-bottom:30px" class="d-flex flex-column align-items-center">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <h1 class="text-dark">Mis Rutinas</h1>
+
+    <!-- Alerts -->
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == 'success' %}
+                <script>
+                    Swal.fire({
+                            "title": "{{message}}",
+                            "icon": "success",
+                            "toast": true,
+                            "timer": 5000,
+                            "timerProgressBar": true,
+                            "showConfirmButton": false,
+                            "position": 'bottom-end'
+                        })
+                </script>
+            {% else %}
+                <script>
+                    Swal.fire({
+                            "title": "{{message}}",
+                            "icon": "error",
+                            "toast": true,
+                            "timer": 5000,
+                            "timerProgressBar": true,
+                            "showConfirmButton": false,
+                            "position": 'bottom-end'
+                        })
+                </script>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    <div class="d-flex flex-column align-items-center mt-3">
+       
+        <button id="btn" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#myModal" style="--bs-btn-padding-y: .007rem; --bs-btn-padding-x: .25rem; --bs-btn-font-size: 1rem;">
+            Crear Rutina
+        </button>
+
+        <!-- Modal create Routine -->
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <form action="" method="POST" id="form">
+                        {% csrf_token %}
+                        <div class="modal-header">
+                            <h5 class="modal-title text-black">Crear Rutina</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="title" class="text-black mb-2">Ingrese el nombre de la rutina:</label>
+                                <input type="text" class="form-control" id="title" name="title">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                            <input type="submit" class="btn btn-primary" value="Guardar">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="container d-flex flex-column justify-content-center my-3">
+
+        {% for r in routine %}
+            {% if user == r.user %}
+                <div class="m-2 p-3" style="background-color: #020010;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 style="font-weight: bolder; margin-bottom: 0.2px;" class="text-light">{{r.title}}</h5>
+                        <div class="d-flex gap-1 align-items-center">
+                            <button type="button" class="btn btn-secondary d-flex align-items-center" style="height: 26px !important; padding: 0 !important;" data-bs-toggle="modal" data-bs-target="#sharedRoutineModal{{ r.id }}">
+                                <img src="{% static 'core/img/compartir.png' %}" style="width: 15px; height: 15px; " class="my-1 mx-2" alt="...">
+                            </button>
+                            <form action='' method='POST'>
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <div class="input-group" style="display: none;">
+                                        <select name="{{ dayform.routine.name }}" class="{{ dayform.routine.field.widget.attrs.class }}">
+                                            <option value={{r.id}}>{{r}}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="text-center fw-bold">
+                                    <input type="submit" class="btn btn-secondary" value="Día +" id="submit-d" style="--bs-btn-padding-y: .007rem; --bs-btn-padding-x: .25rem; --bs-btn-font-size: 1rem;">
+                                </div>
+                            </form>
+                            <div class="dropdown">
+                                <button type="button" class="btn btn-sm btn-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" style=" --bs-btn-padding-y: 0.1rem;">
+                                    <span class="visually-hidden">Toggle Dropdown</span>
+                                  </button>
+                                <ul class="dropdown-menu dropdown-menu-end" style="--bs-dropdown-min-width: 6rem;">
+                                    <li>
+                                        <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editRoutineModal{{ r.id }}">
+                                            Editar
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#deleteRoutineModal{{ r.id }}">
+                                            Eliminar
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- Modal shared Routine-->
+                            <div class="modal fade" id="sharedRoutineModal{{ r.id }}" tabindex="-1" role="dialog" aria-labelledby="sharedRoutineModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered" role="document">
+                                    <div class="modal-content">                       
+                                        <div class="modal-header">
+                                            <h5 class="modal-title text-black">Compartir rutina</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>¿Estás seguro de que deseas compartir la rutina "{{r}}"?</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" >
+                                                <a href="{% url 'myroutines:shared_routines' routine_id=r.id %}" style="text-decoration: none; color: white;">
+                                                    Compartir
+                                                </a>
+                                            </button>
+                                        </div>                               
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modal Edit Routine-->
+                            <div class="modal fade" id="editRoutineModal{{ r.id }}" tabindex="-1" role="dialog" aria-labelledby="editRoutineModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered" role="document">
+                                    <div class="modal-content">
+                                        <form method="post" action="{% url 'myroutines:edit_routine' routine_id=r.id %}">
+                                            {% csrf_token %}                    
+                                            <div class="modal-header">
+                                                <h5 class="modal-title text-black">Editar rutina</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                                <div class="modal-body">
+                                                    <div class="form-group">
+                                                        <label for="title" class="text-black mb-2">Ingrese el nuevo nombre de la rutina:</label>
+                                                        <input type="text" class="form-control" id="title" name="title" value="{{r}}">
+                                                    </div>
+                                                </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>  
+
+                            <!-- Modal Delete Routine-->
+                            <div class="modal fade" id="deleteRoutineModal{{ r.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteRoutineModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered" role="document">
+                                    <div class="modal-content">                       
+                                        <div class="modal-header">
+                                            <h5 class="modal-title text-black">Eliminar rutina</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>¿Estás seguro de que deseas eliminar la rutina "{{r}}"?</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal" >
+                                                <a href="{% url 'myroutines:delete_routine' routine_id=r.id %}" class="delete-routine-btn" style="text-decoration: none; color: white;">
+                                                    Eliminar
+                                                </a>
+                                            </button>
+                                        </div>                               
+                                    </div>
+                                </div>
+                            </div>
+                        
+                        </div>
+                    </div>
+
+                    {% for d in day %}
+                        {% if d.routine == r %}
+        
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th colspan="4" style="color: white; background-color: #131c46 !important;">
+                                            <div class="d-flex align-items-center justify-content-between" style="margin-bottom: 0.6px;">
+                                                DÍA {{d}}
+                                                <div class="d-flex gap-1">
+                                                    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#exerciseModal{{ d.id }}" style="--bs-btn-padding-y: .007rem; --bs-btn-padding-x: .25rem; --bs-btn-font-size: 1rem;">
+                                                        Ejercicio +
+                                                    </button>
+                                                    <div class="dropdown">
+                                                        <button type="button" class="btn btn-sm btn-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" style=" --bs-btn-padding-y: 0.1rem;">
+                                                            <span class="visually-hidden">Toggle Dropdown</span>
+                                                          </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end" style="--bs-dropdown-min-width: 6rem;">
+                                                            <li>
+                                                                <button type="button" class="dropdown-item">Editar</button>
+                                                            </li>
+                                                            <li>
+                                                                <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#deleteDayModal{{ d.id }}">
+                                                                    Eliminar
+                                                                </button>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+
+                                                    <!-- Modal Delete Day-->
+                                                    <div class="modal fade" id="deleteDayModal{{ d.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteDayModalLabel" aria-hidden="true">
+                                                        <div class="modal-dialog modal-dialog-centered" role="document">
+                                                            <div class="modal-content">                       
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title text-black">Eliminar día</h5>
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <p style="font-weight: 400; color: black;">¿Estás seguro de que deseas eliminar el dia "{{d}}"?</p>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                                                                        <a href="{% url 'myroutines:delete_day' day_id=d.id %}" style="text-decoration: none; color: white;">Eliminar</a>
+                                                                    </button>
+                                                                    </div>                               
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </th>                                       
+                                    </tr>
+                                </thead>
+                                <thead>
+                                    <tr>
+                                        <th scope="col" style="background-color: #1d405c; color: white;">Ejercicio</th>
+                                        <th scope="col" style="background-color: #1d405c; color: white;">Series</th>
+                                        <th scope="col" style="background-color: #1d405c; color: white;">Repeticiones</th>
+                                        <th scope="col" style="background-color: #1d405c; color: white;"></th>
+                                    </tr>
+                                </thead>
+            
+                                {% for e in exercise %}
+                                    {% if e.day == d %}
+            
+                                        <tbody>
+                                            <tr>
+                                                <td style="background-color: white;">{{e.name}}</td>
+                                                <td style="background-color: white;">{{e.series}}</td>
+                                                <td style="background-color: white;">{{e.reps}}</td>
+                                                <td style="width: 20px;">
+                                                    <div class="dropdown">
+                                                        <button type="button" class="btn btn-sm btn-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" style=" --bs-btn-padding-y: 0.1rem;">
+                                                            <span class="visually-hidden">Toggle Dropdown</span>
+                                                          </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end" style="--bs-dropdown-min-width: 6rem;">
+                                                            <li>
+                                                                <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editExerciseModal{{ e.id }}">
+                                                                    Editar
+                                                                </button>
+                                                            </li>
+                                                            <li>
+                                                                <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#deleteExerciseModal{{ e.id }}">
+                                                                    Eliminar
+                                                                </button>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+
+                                        <!-- Modal Edit Exercise -->
+                                        <div class="modal fade" id="editExerciseModal{{ e.id }}" tabindex="-1" role="dialog" aria-labelledby="editExerciseModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                                <div class="modal-content">                       
+                                                    <form method="post" action="{% url 'myroutines:edit_exercise' exercise_id=e.id %}">
+                                                        {% csrf_token %}                    
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title text-black">Editar ejercicio</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                            <div class="modal-body">
+                                                                <div class="form-group">
+                                                                    <label for="name" class="text-black mb-2">Nombre</label>
+                                                                    <input type="text" class="form-control" id="name" name="name" value="{{e.name}}">
+                                                                    <label for="series" class="text-black mb-2">Series</label>
+                                                                    <input type="number" class="form-control" id="series" name="series" value="{{e.series}}">
+                                                                    <label for="reps" class="text-black mb-2">Repeticiones</label>
+                                                                    <input type="number" class="form-control" id="reps" name="reps" value="{{e.reps}}">
+                                                                    <select name="{{ exerciseform.day.name }}" style="display: none;">
+                                                                        <option value="{{ d.id }}">{{ d }}</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div> 
+
+                                        <!-- Modal Delete Exercise -->
+                                        <div class="modal fade" id="deleteExerciseModal{{ e.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteExerciseModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                                <div class="modal-content">                       
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title text-black">Eliminar ejercicio</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p style="font-weight: 400; color: black;">¿Estás seguro de que deseas eliminar el ejercicio "{{e}}"?</p>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                                                            <a href="{% url 'myroutines:delete_exercise' exercise_id=e.id %}" style="text-decoration: none; color: white;">Eliminar</a>
+                                                        </button>
+                                                        </div>                               
+                                                </div>
+                                            </div>
+                                        </div>
+            
+                                    {% endif %}
+                                {% endfor %}
+                            </table>
+
+                            <!-- Modal create exercise-->
+                            <div class="modal fade" id="exerciseModal{{ d.id }}" tabindex="-1" role="dialog" aria-labelledby="exerciseModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered" role="document">
+                                    <div class="modal-content">
+                                        <form action="" method="POST" id="exerciseform_day">
+                                            {% csrf_token %}
+                                            <div class="modal-header">
+                                                <h5 class="modal-title text-black">Añadir ejercicio</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="form-group">
+                                                    <label for="name" class="text-black mb-2">Nombre</label>
+                                                    <input type="text" class="form-control" id="name" name="name">
+                                                    <label for="series" class="text-black mb-2">Series</label>
+                                                    <input type="number" class="form-control" id="series" name="series">
+                                                    <label for="reps" class="text-black mb-2">Repeticiones</label>
+                                                    <input type="number" class="form-control" id="reps" name="reps">
+                                                    <select name="{{ exerciseform.day.name }}" style="display: none;">
+                                                        <option value="{{ d.id }}">{{ d }}</option>
+                                                    </select>
+                                                </div>                                      
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                                <input type="submit" class="btn btn-primary mx-2" value="Guardar">
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+        
+                        {% endif %}
+                    {% endfor %}
+
+                </div>
+            {% endif %}
+        {% endfor %}
+
+    </div>
+</main>
+{% endblock %}

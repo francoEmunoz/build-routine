@@ -1,0 +1,11 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}404{% endblock %}
+{% block content %}
+<div style="padding-top:30px; padding-bottom:60px" class="container text-white">
+    <div style="padding-bottom:30px; text-align:center;" class="text-dark">
+        <h1>Página no encontrada</h1>
+        <a href="{% url 'home' %}">Ir al inicio</a>
+    </div>
+</div>
+{% endblock %}
